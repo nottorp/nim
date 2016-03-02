@@ -62,12 +62,13 @@ def iterated_hill_climbing(iterations, function, dimensions, start, end, decimal
             for n in all_neighbors(cur_val):
                 n_floats = bin_list_to_floats(n, bits_per_elem, start, end)
                 n_func = function(n_floats)
-                print n, n_floats, n_func
                 if n_func < cur_val_func:
                     cur_val = n
                     cur_val_floats = n_floats
                     cur_val_func = n_func
                     did_swap = True
+                    print n_floats, n_func
+                    #print n, n_floats, n_func
                     print "Better!"
             print "END Neighbors round"
         print "END ITERATION"
@@ -108,15 +109,19 @@ def rosenbrock(list):
 def sixhump(list):
     x1 = list[0]
     x2 = list[1]
-    res = (4 - (2.1 * (x1 ** 2)) + math.pow(x1, 4/3)) * (x1 ** 2)
-    res = res + x1 * x2
-    res = res + (-4 + 4 * (x2 ** 2)) * (x2 ** 2)
+    res1 = (4 - (2.1 * (x1 ** 2)) + (x1 ** 4)/3) * (x1 ** 2)
+    res2 = x1 * x2
+    res3 = (-4 + 4 * (x2 ** 2)) * (x2 ** 2)
+    print res1, res2, res3
+    res = res1 + res2 + res3
     return res
 
 # def iterated_hill_climbing(iterations, function, dimensions, start, end, decimals):
 #iterated_hill_climbing(1, rastrigin2, 2, -5.12, 5.12, 2)
 #iterated_hill_climbing(100, griegwank8, 2, -600, 600, 2)
 #iterated_hill_climbing(100, rosenbrock, 2, -2.048, 2.048, 3)
-#iterated_hill_climbing(10, sixhump, 2, -2, 2, 6)
+iterated_hill_climbing(100, sixhump, 2, -3, 3, 6)
 
-print sixhump([-2, 0.8])
+#print sixhump([-0.0898, 0.7126])
+#print sixhump([0.0898, -0.7126])
+#print sixhump([-2, 0.8])
