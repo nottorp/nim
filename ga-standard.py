@@ -3,6 +3,7 @@
 import math
 import numpy
 import pprint
+import copy
 
 # Helper functions pulled from hill climbing
 def bits_for_precision(start, end, q):
@@ -100,6 +101,10 @@ class Population(object):
         self.decimals = 3       # Desired precision - for all components
         self.value_func = None
         self.fitness_func = None
+        # And parameters for the genetic part
+        self.elitism = 1 # How many of the best fitness chromozomes to retain before normal selection
+        self.crossoverprob = 0.7
+        self.mutationprob = 0.01 # bit by bit
 
     def gen_random_pop(self):
         print "gen_random_pop, popsize=", self.popsize
@@ -126,6 +131,75 @@ class Population(object):
             print "fitness:", p.fitness
             counter += 1
 
+    def eval(self):
+        for i in range(0, self.popsize):
+            self.pop[i].update_values()
+
+    def selection(self):
+        #TODO elitism
+        new_pop = []
+        total_fitness = 0.0
+        for i in range(0, self.popsize):
+            total_fitness = total_fitness + self.pop[i].fitness
+        for i in range(0, self.popsize):
+            point = numpy.random.random()
+            #print "Generated point:", point
+            acc = 0.0
+            for i in range(0, self.popsize):
+                acc += self.pop[i].fitness
+                print i, acc, acc/total_fitness
+                if (acc/total_fitness) >= point:
+                    # print "Selected index", i
+                    # No choice, because we need multiple copies of some chromozomes
+                    new_pop.append(copy.deepcopy(self.pop[i]))
+                    break
+        pop = new_pop
+
+    def cross_two(self, i1, i2):
+        #print "cross_two", i1, i2
+        p1 = numpy.random.randint(0, i1.bit_len)
+        p2 = p1
+        # cross at least one bit
+        while p2 == p1:
+            p2 = numpy.random.randint(0, i1.bit_len)
+        # Need them in left, right order
+        if p2 < p1:
+            tmp = p1
+            p1 = p2
+            p2 = tmp
+        print "from", p1, "to", p2
+        # Swap mid sequence
+        i2_middle = i2.bits[p1:p2]
+        i2.bits[p1:p2] = i1.bits[p1:p2]
+        i1.bits[p1:p2] = i2_middle
+
+
+
+    def crossover(self):
+        sel_list = []
+        for i in xrange(0, self.popsize):
+            r = numpy.random.random()
+            if r < self.crossoverprob:
+                sel_list.append(i)
+        print "Selection list for crossing:", sel_list
+        for i in xrange(0, len(sel_list), 2):
+            if i < len(sel_list) - 1:
+                #print "Crossing", sel_list[i], sel_list[i+1]
+                #print self.pop[sel_list[i]].bits
+                #print self.pop[sel_list[i+1]].bits
+                self.cross_two(self.pop[sel_list[i]], self.pop[sel_list[i+1]])
+                #print "After"
+                #print self.pop[sel_list[i]].bits
+                #print self.pop[sel_list[i+1]].bits
+
+    def mutation(self):
+        for i in xrange(0, self.popsize):
+            for j in xrange(0, self.pop[i].bit_len):
+                r = numpy.random.random()
+                if r < self.mutationprob:
+                    print "Mutating chromosome", i, "bit", j
+                    self.pop[i].bits[j] = not self.pop[i].bits[j]
+
 #aa = Item()
 #aa.comps = 2
 #aa.intervals = [(-2, 2), (-2, 2)]
@@ -149,9 +223,18 @@ pp = Population()
 pp.popsize = 10
 pp.components = 2
 pp.intervals = [(-3, 3), (-2, 2)]
-pp.decimals = 0
+pp.decimals = 1
 pp.value_func = sixhump
 pp.fitness_func = sixhump_fitness
 
 pp.gen_random_pop()
+pp.dump_pop()
+
+pp.selection()
+
+pp.crossover()
+
+pp.dump_pop()
+pp.mutationprob = 0.01
+pp.mutation()
 pp.dump_pop()
