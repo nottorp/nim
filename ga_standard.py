@@ -20,6 +20,18 @@ def bin_list_to_int(bits):
         acc = acc + bit
     return acc
 
+def int_to_bin_list(val, length):
+    res = []
+    while val > 0:
+        if val % 2 == 1:
+            res.insert(0, 1)
+        else:
+            res.insert(0, 0)
+        val = val / 2
+    while len(res) < length:
+        res.insert(0, 0)
+    return res
+
 class all_neighbors:
     def __init__(self, bin_list):
         self.base = bin_list
@@ -112,6 +124,33 @@ class Item(object):
         self.value = self.value_func(self.floats)
         if self.fitness_func != None:
             self.fitness = self.fitness_func(self.value)
+
+    def hillclimb_one(self, bestfit):
+        tmp = None
+        for n in all_neighbors(self.bits):
+            aa = copy.deepcopy(self)
+            aa.bits = n
+            aa.update_values()
+            if aa.fitness > self.fitness:
+                if tmp <> None:
+                    if aa.fitness > tmp.fitness:
+                        tmp = aa
+                        if not bestfit:
+                            return tmp
+        if tmp <> None:
+            return tmp
+        return None
+
+    def hillclimb_run(self, bestfit):
+        improved = True
+        while improved:
+            tmp = hillclimb_one(self, bestfit)
+            if tmp == None:
+                improved = False
+            else:
+                improved = True
+                self.bits = tmp.bits
+                self.update_values()
 
 class Population(object):
 
@@ -298,78 +337,79 @@ class Population(object):
         return False
 
 
+if __name__ == "__main__":
 
-#aa = Item()
-#aa.comps = 2
-#aa.intervals = [(-2, 2), (-2, 2)]
-#aa.decimals = 0
+    #aa = Item()
+    #aa.comps = 2
+    #aa.intervals = [(-2, 2), (-2, 2)]
+    #aa.decimals = 0
 
-#aa.setup_bits()
-#pprint.pprint(aa.__dict__)
+    #aa.setup_bits()
+    #pprint.pprint(aa.__dict__)
 
-#aa.bits = [1, 1, 1, 1]
-#aa.floats_from_bits()
+    #aa.bits = [1, 1, 1, 1]
+    #aa.floats_from_bits()
 
-#pprint.pprint(aa.__dict__)
+    #pprint.pprint(aa.__dict__)
 
-#aa.value_func = sixhump
-#aa.fitness_func = sixhump_fitness
-#aa.update_values()
+    #aa.value_func = sixhump
+    #aa.fitness_func = sixhump_fitness
+    #aa.update_values()
 
-#pprint.pprint(aa.__dict__)
+    #pprint.pprint(aa.__dict__)
 
-pp = Population()
-pp.popsize = 100
-pp.components = 2
-pp.decimals = 3
+    pp = Population()
+    pp.popsize = 100
+    pp.components = 2
+    pp.decimals = 3
 
-pp.elitism = 1 # How many of the best fitness chromozomes to retain before normal selection
-pp.crossoverprob = 0.7
-pp.mutationprob = 0.01 # bit by bit
-pp.hybridprob = 0.1
-pp.maxnochangeiter = 25
+    pp.elitism = 1 # How many of the best fitness chromozomes to retain before normal selection
+    pp.crossoverprob = 0.7
+    pp.mutationprob = 0.01 # bit by bit
+    pp.hybridprob = 0.1
+    pp.maxnochangeiter = 25
 
-# Six hump
-pp.intervals = [(-3, 3), (-2, 2)]
-pp.value_func = sixhump
-pp.fitness_func = sixhump_fitness
-# Rastrigin
-#pp.intervals = [(-3, 3), (-3, 3)]
-#pp.value_func = rastrigin2
-#pp.fitness_func = rastrigin2_fitness
+    # Six hump
+    pp.intervals = [(-3, 3), (-2, 2)]
+    pp.value_func = sixhump
+    pp.fitness_func = sixhump_fitness
+    # Rastrigin
+    #pp.intervals = [(-3, 3), (-3, 3)]
+    #pp.value_func = rastrigin2
+    #pp.fitness_func = rastrigin2_fitness
 
 
-#pp.gen_random_pop()
+    #pp.gen_random_pop()
 
-#print "Starting from:", pp.pop[0].bits, pp.pop[0].floats, pp.pop[0].value
-#for n in all_neighbors(pp.pop[0].bits):
-#    aa = copy.deepcopy(pp.pop[0])
-#    aa.bits = n
-#    aa.update_values()
-#    print "N:", aa.bits, aa.floats, aa.value
+    #print "Starting from:", pp.pop[0].bits, pp.pop[0].floats, pp.pop[0].value
+    #for n in all_neighbors(pp.pop[0].bits):
+    #    aa = copy.deepcopy(pp.pop[0])
+    #    aa.bits = n
+    #    aa.update_values()
+    #    print "N:", aa.bits, aa.floats, aa.value
 
-pp.gen_random_pop()
-pp.eval()
-#pp.dump_pop()
-#pp.selection()
-#pp.dump_pop()
-#
-for i in xrange(0, 100):
-    print "*****************************************************"
-    if pp.ga_step():
-        print "Decided to stop after ", pp.itercount, "iterations"
-        break
+    pp.gen_random_pop()
+    pp.eval()
+    #pp.dump_pop()
+    #pp.selection()
+    #pp.dump_pop()
+    #
+    for i in xrange(0, 100):
+        print "*****************************************************"
+        if pp.ga_step():
+            print "Decided to stop after ", pp.itercount, "iterations"
+            break
 
-print "Best value found", pp.bestitem.floats, pp.bestitem.value, pp.bestitem.fitness
-print "On iteration", pp.bestiter
+    print "Best value found", pp.bestitem.floats, pp.bestitem.value, pp.bestitem.fitness
+    print "On iteration", pp.bestiter
 
-#pp.dump_pop()
+    #pp.dump_pop()
 
-#pp.selection()
+    #pp.selection()
 
-#pp.crossover()
+    #pp.crossover()
 
-#pp.dump_pop()
-#pp.mutationprob = 0.01
-#pp.mutation()
-#pp.dump_pop()
+    #pp.dump_pop()
+    #pp.mutationprob = 0.01
+    #pp.mutation()
+    #pp.dump_pop()
