@@ -126,25 +126,32 @@ class Item(object):
             self.fitness = self.fitness_func(self.value)
 
     def hillclimb_one(self, bestfit):
+        #print "Hilclimbing from ", self.bits, self.floats, self.value, self.fitness
         tmp = None
         for n in all_neighbors(self.bits):
             aa = copy.deepcopy(self)
             aa.bits = n
             aa.update_values()
+            #print "Testing", aa.bits, aa.floats, aa.value, aa.fitness
             if aa.fitness > self.fitness:
                 if tmp <> None:
                     if aa.fitness > tmp.fitness:
                         tmp = aa
-                        if not bestfit:
-                            return tmp
-        if tmp <> None:
-            return tmp
-        return None
+                else:
+                    tmp = aa
+                if not bestfit:
+                    #print "Climbed to", tmp.bits, tmp.floats, tmp.value, tmp.fitness
+                    return tmp
+        #if tmp == None:
+        #   print "No improvement on this step"
+        #else:
+        #   print "Best improvement is", tmp.bits, tmp.floats, tmp.value, tmp.fitness
+        return tmp
 
     def hillclimb_run(self, bestfit):
         improved = True
         while improved:
-            tmp = hillclimb_one(self, bestfit)
+            tmp = self.hillclimb_one(bestfit)
             if tmp == None:
                 improved = False
             else:
@@ -232,7 +239,7 @@ class Population(object):
                     # No choice, because we need multiple copies of some chromozomes
                     new_pop.append(copy.deepcopy(self.pop[i]))
                     break
-        pop = new_pop
+        self.pop = new_pop
 
     # Crosses two chromosomes on random positions
     def cross_two(self, i1, i2):
@@ -291,6 +298,8 @@ class Population(object):
                 if tmp <> None:
                     if aa.fitness > tmp.fitness:
                         tmp = aa
+                else:
+                    tmp = aa
         if tmp <> None:
             self.pop[i] = tmp
 
